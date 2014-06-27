@@ -7,6 +7,8 @@ import java.util.List;
 
 import kalpas.insta.api.API;
 import kalpas.insta.api.Relationships;
+import kalpas.insta.api.domain.base.AuthResponse;
+import kalpas.insta.api.domain.base.ErrorResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -82,6 +84,7 @@ public class AuthController {
         if (authResponse != null) {
             Relationships relationships = new Relationships();
             relationships.getFollows(authResponse.user.id, authResponse.access_token);
+            relationships.getFollowedBy(authResponse.user.id, authResponse.access_token);
         }
 
         return "auth";

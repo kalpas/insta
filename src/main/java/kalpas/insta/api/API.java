@@ -14,4 +14,6 @@ public class API {
 
     public static final String VERSION = "v1";
 
+    public static final Integer CODE_SUCCESS  = 200;
+
 }
