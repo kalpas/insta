@@ -5,6 +5,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import kalpas.insta.api.API;
+import kalpas.insta.api.Relationships;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,16 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
-    private static final String AUTH_PATH     = "/oauth/access_token/";
-
-    private static final String REDIRECT_URI  = "http://localhost:8080/insta/auth";
-
-    private static final String API_INSTAGRAM = "api.instagram.com";
-
-    private static final String CLIENT_SECRET = "970b5b5dd5e14b2bb75b5873ae9868a3";
-
-    static final String         CLIENT_ID     = "cdcfc3e943a74d9e84291b97d62d5c02";
-
     protected final Log         logger        = LogFactory.getLog(getClass());
 
     @RequestMapping(method = RequestMethod.GET)
@@ -49,7 +42,7 @@ public class AuthController {
         // model.addAttribute("code", code);
 
         URIBuilder builder = new URIBuilder();
-        builder.setScheme("https").setHost(API_INSTAGRAM).setPath(AUTH_PATH);
+        builder.setScheme("https").setHost(API.HOST).setPath(API.AUTH_PATH);
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
         String URI = builder.build().toString();
@@ -57,10 +50,10 @@ public class AuthController {
         HttpPost post = new HttpPost(URI);
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("client_id", CLIENT_ID));
-        params.add(new BasicNameValuePair("client_secret", CLIENT_SECRET));
+        params.add(new BasicNameValuePair("client_id", API.CLIENT_ID));
+        params.add(new BasicNameValuePair("client_secret", API.CLIENT_SECRET));
         params.add(new BasicNameValuePair("grant_type", "authorization_code"));
-        params.add(new BasicNameValuePair("redirect_uri", REDIRECT_URI));
+        params.add(new BasicNameValuePair("redirect_uri", API.REDIRECT_URI));
         params.add(new BasicNameValuePair("code", code));
         post.setEntity(new UrlEncodedFormEntity(params, Consts.UTF_8));
         post.addHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -84,6 +77,11 @@ public class AuthController {
             error = mapper.readValue(entityString, ErrorResponse.class);
             logger.error(error);
             model.addAttribute("error", error.toString());
+        }
+
+        if (authResponse != null) {
+            Relationships relationships = new Relationships();
+            relationships.getFollows(authResponse.user.id, authResponse.access_token);
         }
 
         return "auth";
