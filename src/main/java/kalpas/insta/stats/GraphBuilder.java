@@ -3,13 +3,21 @@ package kalpas.insta.stats;
 import java.util.Set;
 
 import kalpas.insta.api.Relationships;
+import kalpas.insta.api.Users;
 import kalpas.insta.api.domain.UserData;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 public class GraphBuilder {
+
+    private final Log     logger        = LogFactory.getLog(getClass());
+
+    private Users         users         = new Users();
 
     private Relationships relationships = new Relationships();
 
@@ -20,7 +28,6 @@ public class GraphBuilder {
         Set<UserData> friends = Sets.union(followedBy, follows);
 
         Multimap<UserData, UserData> graph = ArrayListMultimap.create();
-        graph.keySet().addAll(friends);
 
         graph.putAll(center, follows);
 
@@ -31,6 +38,15 @@ public class GraphBuilder {
         for (UserData friend : friends) {
 
             // getting followers of the followers
+            friend = users.get(friend.id.toString(), access_token);
+            if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
+                logger.info(String.format("User has too many connections %s", friend.username));
+                continue;
+            } else if (friend == null) {
+                logger.error("user returned is null");
+                continue;
+            }
+
             Set<UserData> set = Sets.newHashSet(relationships.getFollowedBy(friend.id, access_token));
             Set<UserData> intersection = Sets.intersection(set, friends);
             for (UserData user : intersection) {

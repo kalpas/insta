@@ -3,6 +3,6 @@ package kalpas.insta.api.domain;
 public class Counts {
 
     public String media;
-    public String follows;
-    public String followed_by;
+    public Integer follows;
+    public Integer followed_by;
 }

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kalpas.insta.api.API;
-import kalpas.insta.api.Relationships;
 import kalpas.insta.api.domain.base.AuthResponse;
 import kalpas.insta.api.domain.base.ErrorResponse;
 
@@ -75,18 +74,23 @@ public class AuthController {
             authResponse = mapper.readValue(entityString, AuthResponse.class);
             model.addAttribute("image", authResponse.user.profile_picture);
             model.addAttribute("name", authResponse.user.username);
+            model.addAttribute("access_token", authResponse.access_token);
+            model.addAttribute("id", authResponse.user.id);
+            return "home";
         } catch (JsonParseException | JsonMappingException e) {
             error = mapper.readValue(entityString, ErrorResponse.class);
             logger.error(error);
             model.addAttribute("error", error.toString());
+            return "error";
         }
 
-        if (authResponse != null) {
-            Relationships relationships = new Relationships();
-            relationships.getFollows(authResponse.user.id, authResponse.access_token);
-            relationships.getFollowedBy(authResponse.user.id, authResponse.access_token);
-        }
+        // if (authResponse != null) {
+        // Relationships relationships = new Relationships();
+        // relationships.getFollows(authResponse.user.id,
+        // authResponse.access_token);
+        // relationships.getFollowedBy(authResponse.user.id,
+        // authResponse.access_token);
+        // }
 
-        return "auth";
     }
 }

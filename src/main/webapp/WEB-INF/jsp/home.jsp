@@ -6,6 +6,7 @@
 <body>
 	<h2>Here you are, ${name}</h2>
 	<img src="${image}" alt="some_text">
-	<h2>Error:${error}</h2>
+	
+	<a href="/insta/graph?access_token=${access_token}&id=${id}">build graph</a>
 </body>
 </html>

@@ -2,6 +2,8 @@ package kalpas.insta.stats;
 
 import java.util.Date;
 
+import kalpas.insta.api.Users;
+import kalpas.insta.api.domain.UserData;
 import kalpas.insta.stats.IO.GmlWriter;
 import kalpas.insta.stats.graph.GmlGraph;
 
@@ -23,18 +25,27 @@ public class GraphBuilderController {
 
     private GraphBuilder graphBuilder = new GraphBuilder();
     private GmlWriter    writer       = new GmlWriter();
-    
-    
+
+    private Users        users        = new Users();
+
     @RequestMapping(method = RequestMethod.GET)
-    public String build(@RequestParam(value = "access_token", required = true) String access_token, ModelMap model) {
+    public String build(@RequestParam(value = "access_token", required = true) String access_token,
+            @RequestParam(value = "id", required = true) String id, ModelMap model) {
         String fileName = "graph" + new Date().getTime();
 
+        UserData user = users.get(id, access_token);
+        if (user != null) {
+            GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(user, access_token));
+            writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
 
-        GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(null, access_token));
-        writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username", "full_name"));
-
-        model.addAttribute("file", fileName);
-        return "graph";
+            model.addAttribute("file", fileName);
+            return "graph";
+        } else {
+            String errorMessage = String.format("User ID \"%s\" is not valid", id);
+            logger.info(errorMessage);
+            model.addAttribute("error", errorMessage);
+            return "error";
+        }
     }
 
 }

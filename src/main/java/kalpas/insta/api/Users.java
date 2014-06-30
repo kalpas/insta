@@ -31,6 +31,7 @@ public class Users {
     private ObjectMapper        mapper     = new ObjectMapper();
 
     public UserData get(String id, String access_token) {
+        logger.info(String.format("getting info for id %s", id));
         UserData userData = null;
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(API.HOST).setPath("/" + API.VERSION + PATH + "/" + id + "/")

@@ -7,7 +7,7 @@
 
     <!-- the application context definition for the springapp DispatcherServlet -->
 
-    <bean name="/auth.htm" class="kalpas.insta.AuthController" />
+    <bean name="/auth" class="kalpas.insta.AuthController" />
     <bean name="/graph" class="kalpas.insta.stats.GraphBuilderController" />
 
     <bean id="viewResolver"

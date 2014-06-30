@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import kalpas.insta.api.domain.UserData;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 public class GmlGraph {
 
@@ -17,9 +19,14 @@ public class GmlGraph {
 
     public static GmlGraph build(Multimap<UserData, UserData> data) {
         GmlGraph gmlGraph = new GmlGraph();
-        for (UserData user : data.keySet()) {
+        Set<UserData> users = Sets.newHashSet(data.keySet());
+        for (Entry<UserData, UserData> entry : data.entries()) {// FIXME
+            users.add(entry.getValue());
+        }
+        for (UserData user : users) {
             gmlGraph.nodes.add(new Node(asMap(user)));
         }
+
 
         for (Entry<UserData, UserData> entry : data.entries()) {
             gmlGraph.edges.add(new Edge(entry.getKey().id.toString(), entry.getValue().id.toString()));
