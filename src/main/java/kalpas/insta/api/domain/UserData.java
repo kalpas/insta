@@ -11,4 +11,16 @@ public class UserData {
     public String bio;
     public String website;
 
+    public Counts counts;
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.id.equals(obj);
+    }
+
 }
