@@ -8,8 +8,8 @@ public class UsersTest {
 
     @Test
     public void test() {
-        Users users = new Users();
-        UserData data = users.get("", "");
+        UsersApi usersApi = new UsersApi();
+        UserData data = usersApi.get("", "");
 
     }
 

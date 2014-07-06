@@ -2,7 +2,7 @@ package kalpas.insta.stats;
 
 import java.util.Date;
 
-import kalpas.insta.api.Users;
+import kalpas.insta.api.UsersApi;
 import kalpas.insta.api.domain.UserData;
 import kalpas.insta.stats.IO.GmlWriter;
 import kalpas.insta.stats.graph.GmlGraph;
@@ -26,17 +26,23 @@ public class GraphBuilderController {
     private GraphBuilder graphBuilder = new GraphBuilder();
     private GmlWriter    writer       = new GmlWriter();
 
-    private Users        users        = new Users();
+    private UsersApi        usersApi        = new UsersApi();
 
     @RequestMapping(method = RequestMethod.GET)
     public String build(@RequestParam(value = "access_token", required = true) String access_token,
-            @RequestParam(value = "id", required = true) String id, ModelMap model) {
+            @RequestParam(value = "id", required = true) String id,
+            @RequestParam(value = "grade", required = false) Integer grade, ModelMap model) {
         String fileName = "graph" + new Date().getTime();
 
-        UserData user = users.get(id, access_token);
+        UserData user = usersApi.get(id, access_token);
         if (user != null) {
-            GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(user, access_token));
-            writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
+            if (grade == null || grade == 1) {
+                GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(user, access_token));
+                writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
+            } else if (grade == 2) {
+                GmlGraph graph = GmlGraph.build(graphBuilder.buildGraphGrade2(user, access_token));
+                writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
+            }
 
             model.addAttribute("file", fileName);
             return "graph";
@@ -47,5 +53,4 @@ public class GraphBuilderController {
             return "error";
         }
     }
-
 }

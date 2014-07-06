@@ -7,7 +7,7 @@ import java.util.List;
 
 import kalpas.insta.api.API;
 import kalpas.insta.api.domain.base.AuthResponse;
-import kalpas.insta.api.domain.base.ErrorResponse;
+import kalpas.insta.api.domain.base.Meta;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -69,7 +69,7 @@ public class AuthController {
         }
         ObjectMapper mapper = new ObjectMapper();
         AuthResponse authResponse = null;
-        ErrorResponse error = null;
+        Meta error = null;
         try {
             authResponse = mapper.readValue(entityString, AuthResponse.class);
             model.addAttribute("image", authResponse.user.profile_picture);
@@ -78,14 +78,14 @@ public class AuthController {
             model.addAttribute("id", authResponse.user.id);
             return "home";
         } catch (JsonParseException | JsonMappingException e) {
-            error = mapper.readValue(entityString, ErrorResponse.class);
+            error = mapper.readValue(entityString, Meta.class);
             logger.error(error);
             model.addAttribute("error", error.toString());
             return "error";
         }
 
         // if (authResponse != null) {
-        // Relationships relationships = new Relationships();
+        // RelationshipsApi relationships = new RelationshipsApi();
         // relationships.getFollows(authResponse.user.id,
         // authResponse.access_token);
         // relationships.getFollowedBy(authResponse.user.id,
