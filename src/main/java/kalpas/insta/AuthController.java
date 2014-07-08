@@ -47,7 +47,7 @@ public class AuthController {
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
         String URI = builder.build().toString();
-        logger.info(URI);
+        logger.debug(URI);
         HttpPost post = new HttpPost(URI);
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -63,7 +63,7 @@ public class AuthController {
         String entityString;
         try {
             entityString = IOUtils.toString(response.getEntity().getContent());
-            logger.info(entityString);
+            logger.debug(entityString);
         } finally {
             response.close();
         }

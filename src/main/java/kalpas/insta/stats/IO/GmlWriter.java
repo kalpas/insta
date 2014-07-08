@@ -13,7 +13,9 @@ import kalpas.insta.stats.graph.Node;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GmlWriter {
 
     private static final String ID  = "id";

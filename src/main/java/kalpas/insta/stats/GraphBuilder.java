@@ -9,18 +9,23 @@ import kalpas.insta.api.domain.UserData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
+@Component
 public class GraphBuilder {
 
-    private final Log     logger        = LogFactory.getLog(getClass());
+    private final Log        logger           = LogFactory.getLog(getClass());
 
-    private UsersApi         usersApi         = new UsersApi();
+    @Autowired
+    private UsersApi         usersApi;
 
-    private RelationshipsApi relationshipsApi = new RelationshipsApi();
+    @Autowired
+    private RelationshipsApi relationshipsApi;
 
     public Multimap<UserData, UserData> buildGraph(UserData center, String access_token) {
         Set<UserData> followedBy = Sets.newHashSet(relationshipsApi.getFollowedBy(center.id, access_token));
@@ -40,7 +45,8 @@ public class GraphBuilder {
 
             friend = usersApi.get(friend.id.toString(), access_token);
 
-            // check to avoid too much work with popular usersApi and null usersApi
+            // check to avoid too much work with popular usersApi and null
+            // usersApi
             if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
                 logger.info(String.format("User has too many connections %s", friend.username));
                 continue;
@@ -87,7 +93,8 @@ public class GraphBuilder {
 
             friend = usersApi.get(friend.id.toString(), access_token);
 
-            // check to avoid too much work with popular usersApi and null usersApi
+            // check to avoid too much work with popular usersApi and null
+            // usersApi
             if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
                 logger.info(String.format("User has too many connections %s", friend.username));
                 continue;
@@ -107,7 +114,7 @@ public class GraphBuilder {
             graph.putAll(friend, set);
 
             progress++;
-            logger.info(String.format("getting first circle %.2f%% (%d//%d)", progress * 100 / total, progress, total));
+            logger.info(String.format("getting first circle %.2f%% (%d/%d)", progress * 100. / total, progress, total));
         }
 
         progress = 0;
@@ -116,7 +123,8 @@ public class GraphBuilder {
 
             friend = usersApi.get(friend.id.toString(), access_token);
 
-            // check to avoid too much work with popular usersApi and null usersApi
+            // check to avoid too much work with popular usersApi and null
+            // usersApi
             if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
                 logger.info(String.format("User has too many connections %s", friend.username));
                 continue;
@@ -136,7 +144,7 @@ public class GraphBuilder {
             graph.putAll(friend, intersection);
 
             progress++;
-            logger.info(String.format("getting first circle %.2f%% (%d//%d)", progress * 100 / total, progress, total));
+            logger.info(String.format("getting second circle %.2f%% (%d/%d)", progress * 100. / total, progress, total));
         }
 
         return graph;

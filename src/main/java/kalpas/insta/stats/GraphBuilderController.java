@@ -2,6 +2,7 @@ package kalpas.insta.stats;
 
 import java.util.Date;
 
+import kalpas.insta.AppConsts;
 import kalpas.insta.api.UsersApi;
 import kalpas.insta.api.domain.UserData;
 import kalpas.insta.stats.IO.GmlWriter;
@@ -9,6 +10,7 @@ import kalpas.insta.stats.graph.GmlGraph;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,18 +23,23 @@ import com.google.common.collect.Sets;
 @RequestMapping("/graph")
 public class GraphBuilderController {
 
-    private final Log    logger       = LogFactory.getLog(getClass());
+    private final Log    logger = LogFactory.getLog(getClass());
 
-    private GraphBuilder graphBuilder = new GraphBuilder();
-    private GmlWriter    writer       = new GmlWriter();
+    @Autowired
+    private GraphBuilder graphBuilder;
 
-    private UsersApi        usersApi        = new UsersApi();
+    @Autowired
+    private GmlWriter    writer;
+
+    @Autowired
+    private UsersApi     usersApi;
 
     @RequestMapping(method = RequestMethod.GET)
     public String build(@RequestParam(value = "access_token", required = true) String access_token,
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "grade", required = false) Integer grade, ModelMap model) {
-        String fileName = "graph" + new Date().getTime();
+
+        String fileName = AppConsts.ROOT_PATH + "graph" + new Date().getTime();
 
         UserData user = usersApi.get(id, access_token);
         if (user != null) {
@@ -47,10 +54,11 @@ public class GraphBuilderController {
             model.addAttribute("file", fileName);
             return "graph";
         } else {
-            String errorMessage = String.format("User ID \"%s\" is not valid", id);
-            logger.info(errorMessage);
+            String errorMessage = String.format("User ID \"%s\" is not valid. check for error above", id);
+            logger.error(errorMessage);
             model.addAttribute("error", errorMessage);
             return "error";
         }
     }
+
 }

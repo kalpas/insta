@@ -9,12 +9,16 @@ import kalpas.insta.api.domain.base.InstagramApiException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UsersApi {
 
     protected final Log         logger = LogFactory.getLog(getClass());
 
-    private ApiBase             api    = new ApiBase();
+    @Autowired
+    private ApiBase             api;
 
     private static final String PATH   = "/users";
 
@@ -23,7 +27,11 @@ public class UsersApi {
         UserData userData = null;
         try {
             UsersResponse apiResponse = api.executeRequest(buildRequestString(id, access_token), UsersResponse.class);
-            userData = apiResponse.data;
+            if (apiResponse != null) {
+                userData = apiResponse.data;
+            } else {
+                logger.error("null api response, check request above");
+            }
         } catch (InstagramApiException e) {
             // FIXME some code here to handle APINotAllowedError
         }

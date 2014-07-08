@@ -11,32 +11,45 @@ import kalpas.insta.api.domain.base.OAuthRateLimitException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Component
 public class ApiBase {
 
-    protected final Log           logger     = LogFactory.getLog(getClass());
+    private static final int      MAX_RETRIES = 3;
 
-    protected CloseableHttpClient httpClient = HttpClients.createDefault();
+    private final Log           logger      = LogFactory.getLog(getClass());
 
-    protected ObjectMapper        mapper     = new ObjectMapper();
+    @Autowired
+    private CloseableHttpClient httpClient;
 
-    protected <T extends ApiResponse> T executeRequest(String requestString, Class<T> cls) throws APINotAllowedError {
+    @Autowired
+    private ObjectMapper        mapper;
+
+    public <T extends ApiResponse> T executeRequest(String requestString, Class<T> cls) throws APINotAllowedError {
         String jsonResponse = executeHttpRequest(requestString);
         T apiResponse = null;
+
+        if (jsonResponse == null) {
+            return apiResponse;
+        }
+
         try {
             apiResponse = parseJson(jsonResponse, cls);
         } catch (OAuthRateLimitException e) {
             try {
-                logger.info("sleeping for 60s");
+                logger.info("sleeping for 60 min");
                 TimeUnit.MINUTES.sleep(60);
+                return executeRequest(requestString, cls);
             } catch (InterruptedException e2) {
                 logger.error("sleep interrupted: " + e2.toString());
             }
@@ -61,16 +74,38 @@ public class ApiBase {
     }
 
     private String executeHttpRequest(String requestString) {
+        return executeHttpRequest(requestString, MAX_RETRIES);
+    }
+
+    private String executeHttpRequest(String requestString, int retries) {
+        logger.debug(requestString);
         HttpGet request = new HttpGet(requestString);
         String entityString = null;
         CloseableHttpResponse response = null;
         try {
             response = httpClient.execute(request);
-            try {
-                entityString = IOUtils.toString(response.getEntity().getContent());
-                logger.info(entityString);
-            } finally {
-                response.close();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (HttpStatus.SC_OK == statusCode) {
+                try {
+                    entityString = IOUtils.toString(response.getEntity().getContent());
+                    logger.debug(entityString);
+                } finally {
+                    response.close();
+                }
+            } else if (HttpStatus.SC_SERVICE_UNAVAILABLE == statusCode) {
+                // retry after 3s
+                try {
+                    logger.info(String.format(
+                            "service unavailable, waiting for 3s untill next retry (%d retries left)", retries));
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    logger.error("sleep interrupted");
+                }
+                if (retries != 0) {
+                    return executeHttpRequest(requestString, retries - 1);
+                }
+            } else {
+                logger.error(String.format("status code is not OK: %s", statusCode));
             }
         } catch (IllegalStateException | IOException e1) {
             logger.error(e1);

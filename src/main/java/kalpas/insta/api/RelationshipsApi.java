@@ -12,12 +12,16 @@ import kalpas.insta.api.domain.base.InstagramApiException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RelationshipsApi {
 
     protected final Log         logger = LogFactory.getLog(getClass());
 
-    private ApiBase             api    = new ApiBase();
+    @Autowired
+    private ApiBase             api;
 
     private static final String PATH   = "/users";
 
@@ -42,7 +46,9 @@ public class RelationshipsApi {
             RelationshipsResponse apiResponse = api.executeRequest(buildRequestString(userId, access_token, METHOD),
                     RelationshipsResponse.class);
             do {
-                if (apiResponse.meta != null && API.CODE_SUCCESS.equals(apiResponse.meta.code)) {
+                if (apiResponse == null) {
+                    logger.error("null api response, check request above");
+                } else if (apiResponse.meta != null && API.CODE_SUCCESS.equals(apiResponse.meta.code)) {
                     Collections.addAll(follows, apiResponse.data);
                 }
                 if (apiResponse.pagination != null && apiResponse.pagination.next_url != null) {
@@ -51,11 +57,11 @@ public class RelationshipsApi {
                     apiResponse = null;
                 }
             } while (apiResponse != null);
-            logger.info("Success");
+            logger.info(String.format("all data received for user %s", userId.toString()));
         } catch (InstagramApiException e) {
             logger.error(e);
         }
-        logger.info("returned users: " + follows.size());
+        logger.info(String.format("returned list contains %d users", follows.size()));
         return follows;
     }
 
