@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 @Component
 public class GraphBuilder {
 
-    private final Log        logger           = LogFactory.getLog(getClass());
+    private final Log        logger = LogFactory.getLog(getClass());
 
     @Autowired
     private UsersApi         usersApi;
@@ -28,127 +28,102 @@ public class GraphBuilder {
     private RelationshipsApi relationshipsApi;
 
     public Multimap<UserData, UserData> buildGraph(UserData center, String access_token) {
-        Set<UserData> followedBy = Sets.newHashSet(relationshipsApi.getFollowedBy(center.id, access_token));
-        Set<UserData> follows = Sets.newHashSet(relationshipsApi.getFollows(center.id, access_token));
 
-        Set<UserData> friends = Sets.union(followedBy, follows);
-
+        // TODO change it to HashMultimap when things will be all right
         Multimap<UserData, UserData> graph = ArrayListMultimap.create();
 
-        graph.putAll(center, follows);
+        Set<UserData> group = wireFirstLayer(access_token, center, graph);
 
-        for (UserData follower : followedBy) {
-            graph.put(follower, center);// putting relations with user
-        }
-
-        for (UserData friend : friends) {
-
-            friend = usersApi.get(friend.id.toString(), access_token);
-
-            // check to avoid too much work with popular usersApi and null
-            // usersApi
-            if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
-                logger.info(String.format("User has too many connections %s", friend.username));
-                continue;
-            } else if (friend == null) {
-                logger.error("user returned is null");
-                continue;
-            }
-
-            Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollowedBy(friend.id, access_token));
-            Set<UserData> intersection = Sets.intersection(set, friends);
-            for (UserData user : intersection) {
-                graph.put(user, friend);
-            }
-
-            set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
-            intersection = Sets.intersection(set, friends);
-            graph.putAll(friend, intersection);
-        }
+        // putting connection backwards and sideways
+        wireLastLayer(access_token, group, graph);
 
         return graph;
 
     }
 
-    public Multimap<UserData, UserData> buildGraphGrade2(UserData center, String access_token) {
-        Set<UserData> followedBy = Sets.newHashSet(relationshipsApi.getFollowedBy(center.id, access_token));
-        Set<UserData> follows = Sets.newHashSet(relationshipsApi.getFollows(center.id, access_token));
-
-        Set<UserData> firstCircle = Sets.union(followedBy, follows);
+    public Multimap<UserData, UserData> buildGraphLevel2(UserData center, String access_token) {
 
         Multimap<UserData, UserData> graph = ArrayListMultimap.create();
 
-        graph.putAll(center, follows);
+        // building the first level of star
+        Set<UserData> layer_1 = wireFirstLayer(access_token, center, graph);
 
+        Set<UserData> layer_2 = wireMiddleLayer(access_token, layer_1, graph);
+
+        wireLastLayer(access_token, layer_2, graph);
+
+        return graph;
+
+    }
+
+    private Set<UserData> wireFirstLayer(String access_token, UserData center, Multimap<UserData, UserData> graph) {
+        Set<UserData> followedBy = Sets.newHashSet(relationshipsApi.getFollowedBy(center.id, access_token));
+        Set<UserData> follows = Sets.newHashSet(relationshipsApi.getFollows(center.id, access_token));
+
+        graph.putAll(center, follows);
         for (UserData follower : followedBy) {
             graph.put(follower, center);// putting relations with center
         }
+        Set<UserData> level_1 = Sets.union(followedBy, follows);
 
-        Set<UserData> secondCircle = new HashSet<>();
+        return level_1;
+    }
 
-        int total = firstCircle.size();
+    private Set<UserData> wireMiddleLayer(String access_token, Set<UserData> group, Multimap<UserData, UserData> graph) {
+        Set<UserData> nextLayer = new HashSet<>();
+
+        int total = group.size();
         int progress = 0;
 
-        for (UserData friend : firstCircle) {
+        for (UserData friend : group) {
 
             friend = usersApi.get(friend.id.toString(), access_token);
 
-            // check to avoid too much work with popular usersApi and null
-            // usersApi
-            if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
-                logger.info(String.format("User has too many connections %s", friend.username));
-                continue;
-            } else if (friend == null) {
+            if (friend == null) {
                 logger.error("user returned is null");
                 continue;
             }
 
-            Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollowedBy(friend.id, access_token));
-            secondCircle.addAll(set);
+            Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
+            nextLayer.addAll(Sets.difference(set, group));
+            graph.putAll(friend, set);
+
+            set = Sets.newHashSet(relationshipsApi.getFollowedBy(friend.id, access_token));
+            set = Sets.difference(set, group);
+            nextLayer.addAll(set);
             for (UserData user : set) {
                 graph.put(user, friend);
             }
 
-            set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
-            secondCircle.addAll(set);
-            graph.putAll(friend, set);
-
             progress++;
-            logger.info(String.format("getting first circle %.2f%% (%d/%d)", progress * 100. / total, progress, total));
+            logger.info(String.format("got %.2f%% of connections (%d/%d)", progress * 100. / total, progress, total));
         }
+        return nextLayer;
+    }
 
-        progress = 0;
-        total = secondCircle.size();
-        for (UserData friend : secondCircle) {
+    private void wireLastLayer(String access_token, Set<UserData> group, Multimap<UserData, UserData> graph) {
 
+        int total = group.size();
+        int progress = 0;
+
+        for (UserData friend : group) {
+
+            logger.info(String.format("getting info for %s user", friend.username));
             friend = usersApi.get(friend.id.toString(), access_token);
 
-            // check to avoid too much work with popular usersApi and null
-            // usersApi
-            if (friend != null && (friend.counts.followed_by > 1000 || friend.counts.follows > 1000)) {
-                logger.info(String.format("User has too many connections %s", friend.username));
-                continue;
-            } else if (friend == null) {
+            if (friend == null) {
                 logger.error("user returned is null");
                 continue;
             }
 
-            Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollowedBy(friend.id, access_token));
-            Set<UserData> intersection = Sets.intersection(set, secondCircle);
-            for (UserData user : intersection) {
-                graph.put(user, friend);
-            }
-
-            set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
-            intersection = Sets.intersection(set, secondCircle);
-            graph.putAll(friend, intersection);
+            Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
+            // excluding any connections outside of the group
+            set = Sets.intersection(set, group);
+            graph.putAll(friend, set);
 
             progress++;
-            logger.info(String.format("getting second circle %.2f%% (%d/%d)", progress * 100. / total, progress, total));
+            logger.info(String.format("got %.2f%% of connections (%d/%d)", progress * 100. / total, progress, total));
         }
-
-        return graph;
-
     }
 
 }

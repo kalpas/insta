@@ -37,17 +37,18 @@ public class GraphBuilderController {
     @RequestMapping(method = RequestMethod.GET)
     public String build(@RequestParam(value = "access_token", required = true) String access_token,
             @RequestParam(value = "id", required = true) String id,
-            @RequestParam(value = "grade", required = false) Integer grade, ModelMap model) {
+            @RequestParam(value = "level", required = false) Integer level, ModelMap model) {
 
         String fileName = AppConsts.ROOT_PATH + "graph" + new Date().getTime();
 
         UserData user = usersApi.get(id, access_token);
         if (user != null) {
-            if (grade == null || grade == 1) {
+            if (level == null || level == 1) {
+                // TODO testing 2nd version of getGraph
                 GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(user, access_token));
                 writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
-            } else if (grade == 2) {
-                GmlGraph graph = GmlGraph.build(graphBuilder.buildGraphGrade2(user, access_token));
+            } else if (level == 2) {
+                GmlGraph graph = GmlGraph.build(graphBuilder.buildGraphLevel2(user, access_token));
                 writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
             }
 

@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class ApiBase {
 
-    private static final int      MAX_RETRIES = 3;
+    private static final int    MAX_RETRIES = 3;
 
     private final Log           logger      = LogFactory.getLog(getClass());
 
@@ -77,6 +77,7 @@ public class ApiBase {
         return executeHttpRequest(requestString, MAX_RETRIES);
     }
 
+    // FIXME rewrite using response handler (ResponseHandler)
     private String executeHttpRequest(String requestString, int retries) {
         logger.debug(requestString);
         HttpGet request = new HttpGet(requestString);
@@ -86,22 +87,16 @@ public class ApiBase {
             response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
             if (HttpStatus.SC_OK == statusCode) {
-                try {
-                    entityString = IOUtils.toString(response.getEntity().getContent());
-                    logger.debug(entityString);
-                } finally {
-                    response.close();
-                }
+                entityString = IOUtils.toString(response.getEntity().getContent());
+                logger.debug(entityString);
             } else if (HttpStatus.SC_SERVICE_UNAVAILABLE == statusCode) {
                 // retry after 3s
-                try {
-                    logger.info(String.format(
-                            "service unavailable, waiting for 3s untill next retry (%d retries left)", retries));
-                    TimeUnit.SECONDS.sleep(3);
-                } catch (InterruptedException e) {
-                    logger.error("sleep interrupted");
-                }
+                logger.info(String.format("service unavailable, waiting for 3s untill next retry (%d retries left)",
+                        retries));
+                TimeUnit.SECONDS.sleep(3);
+
                 if (retries != 0) {
+                    // making retries in recursion
                     return executeHttpRequest(requestString, retries - 1);
                 }
             } else {
@@ -109,7 +104,18 @@ public class ApiBase {
             }
         } catch (IllegalStateException | IOException e1) {
             logger.error(e1);
+        } catch (InterruptedException e) {
+            logger.error("sleep interrupted");
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    logger.error(e);
+                }
+            }
         }
+
         return entityString;
     }
 
