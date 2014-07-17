@@ -18,11 +18,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class Neo4JTest {
 
     @Autowired
-    private Neo4jDB db;
+    private GraphDatabaseService graphDb;
 
     @Test
     public void testNeo4j() {
-        GraphDatabaseService graphDb = db.getGraphDatabaseService();
         Node firstNode;
         Node seconNode;
 

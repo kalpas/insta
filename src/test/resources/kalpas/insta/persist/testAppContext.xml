@@ -8,8 +8,8 @@
 
     <import resource="classpath:applicationContext.xml" />
 
-    <bean id="neo4jDBService" class="kalpas.insta.persist.Neo4jDB"
-        primary="true">
+    <bean id="neo4jDBService" class="kalpas.insta.persist.Neo4jDBServiceFactory"
+        factory-method="getNeo4jService">
         <constructor-arg value="test.db"></constructor-arg>
     </bean>
 
