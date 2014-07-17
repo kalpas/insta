@@ -8,8 +8,10 @@
 
     <context:component-scan base-package="kalpas.insta" />
 
-    <bean id="httpClient" class="org.apache.http.impl.client.HttpClients"
-        factory-method="createDefault">
+    <!-- <bean id="httpClient" class="org.apache.http.impl.client.HttpClients" 
+        factory-method="createDefault"> </bean> -->
+    <bean id="httpClient" class="kalpas.insta.api.HttpClientFactory"
+        factory-method="getHttpClient">
     </bean>
 
     <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper"></bean>

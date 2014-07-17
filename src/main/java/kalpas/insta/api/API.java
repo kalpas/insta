@@ -16,4 +16,6 @@ public class API {
 
     public static final Integer CODE_SUCCESS  = 200;
 
+    public static final Integer HTTP_SC_TOO_MANY_REQUESTS = 429;
+
 }

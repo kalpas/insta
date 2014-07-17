@@ -6,6 +6,7 @@ import kalpas.insta.api.domain.UserData;
 import kalpas.insta.api.domain.UsersResponse;
 import kalpas.insta.api.domain.base.InstagramApiException;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
@@ -22,11 +23,60 @@ public class UsersApi {
 
     private static final String PATH   = "/users";
 
-    public UserData get(String id, String access_token) {
-        logger.info(String.format("getting info for id %s", id));
+    /**
+     * populates give user object with data
+     * 
+     * @param user
+     * @param access_token
+     * @return
+     */
+    public UserData get(UserData user, String access_token) {
+        UserData details = get(user.id, access_token);
+
+        if (details == null) {
+            logger.error(String.format("null reponse for GET %s user", user));
+            return user;
+        }
+
+        if (user.username == null) {
+            user.username = details.username;
+        }
+        if (user.first_name == null) {
+            user.first_name = details.first_name;
+        }
+        if (user.full_name == null) {
+            user.full_name = details.full_name;
+        }
+        if (user.profile_picture == null) {
+            user.profile_picture = details.profile_picture;
+        }
+        if (user.id == null) {
+            user.id = details.id;
+        }
+        if (user.last_name == null) {
+            user.last_name = details.last_name;
+        }
+        if (user.bio == null) {
+            user.bio = details.bio;
+        }
+        if (user.website == null) {
+            user.website = details.website;
+        }
+        if (user.counts == null) {
+            user.counts = details.counts;
+        }
+
+        return user;
+    }
+
+    public UserData get(Long id, String access_token) {
+        logger.debug(String.format("getting info for id %s", id));
+
+        long elapsed = System.nanoTime();
         UserData userData = null;
         try {
-            UsersResponse apiResponse = api.executeRequest(buildRequestString(id, access_token), UsersResponse.class);
+            UsersResponse apiResponse = api.executeRequest(buildRequestString(id.toString(), access_token),
+                    UsersResponse.class);
             if (apiResponse != null) {
                 userData = apiResponse.data;
             } else {
@@ -35,6 +85,9 @@ public class UsersApi {
         } catch (InstagramApiException e) {
             // FIXME some code here to handle APINotAllowedError
         }
+        elapsed = System.nanoTime() - elapsed;
+        logger.debug(String.format("took %s for GET USER id=%d to complete",
+                DurationFormatUtils.formatDurationHMS(elapsed), id));
 
         return userData;
     }

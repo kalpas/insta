@@ -38,5 +38,11 @@ public class UserData {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s(%d) [ < %d| > %d ]", username, id, counts == null ? -1 : counts.followed_by,
+                counts == null ? -1 : counts.follows);
+
+    }
 
 }

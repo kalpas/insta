@@ -9,7 +9,7 @@ public class UsersTest {
     @Test
     public void test() {
         UsersApi usersApi = new UsersApi();
-        UserData data = usersApi.get("", "");
+        UserData data = usersApi.get(0l, "");
 
     }
 

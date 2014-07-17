@@ -1,6 +1,7 @@
 package kalpas.insta.stats;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import kalpas.insta.api.RelationshipsApi;
@@ -42,18 +43,39 @@ public class GraphBuilder {
     }
 
     public Multimap<UserData, UserData> buildGraphLevel2(UserData center, String access_token) {
+        int max = 1000;// magic number to skip celebrities
 
         Multimap<UserData, UserData> graph = ArrayListMultimap.create();
 
         // building the first level of star
         Set<UserData> layer_1 = wireFirstLayer(access_token, center, graph);
 
+        // TODO temporary to skip celebrities (adds API overhead)
+        filterOutCelebrities(layer_1, max, access_token);
+
         Set<UserData> layer_2 = wireMiddleLayer(access_token, layer_1, graph);
+
+        // TODO temporary to skip celebrities (adds API overhead)
+        filterOutCelebrities(layer_2, max, access_token);
 
         wireLastLayer(access_token, layer_2, graph);
 
         return graph;
 
+    }
+
+    private void filterOutCelebrities(Set<UserData> set, int count, String access_token) {
+        Iterator<UserData> i = set.iterator();
+        while (i.hasNext()) {
+            UserData user = i.next();
+            logger.info(String.format("getting info for %s user", user.username));
+            user = usersApi.get(user, access_token);
+
+            if (user.counts != null && (user.counts.followed_by > count || user.counts.follows > count)) {
+                logger.info(String.format("Skipping celebrity %s", user.username));
+                i.remove();
+            }
+        }
     }
 
     private Set<UserData> wireFirstLayer(String access_token, UserData center, Multimap<UserData, UserData> graph) {
@@ -64,7 +86,7 @@ public class GraphBuilder {
         for (UserData follower : followedBy) {
             graph.put(follower, center);// putting relations with center
         }
-        Set<UserData> level_1 = Sets.union(followedBy, follows);
+        Set<UserData> level_1 = Sets.newHashSet(Sets.union(followedBy, follows));
 
         return level_1;
     }
@@ -76,13 +98,6 @@ public class GraphBuilder {
         int progress = 0;
 
         for (UserData friend : group) {
-
-            friend = usersApi.get(friend.id.toString(), access_token);
-
-            if (friend == null) {
-                logger.error("user returned is null");
-                continue;
-            }
 
             Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
             nextLayer.addAll(Sets.difference(set, group));
@@ -107,14 +122,6 @@ public class GraphBuilder {
         int progress = 0;
 
         for (UserData friend : group) {
-
-            logger.info(String.format("getting info for %s user", friend.username));
-            friend = usersApi.get(friend.id.toString(), access_token);
-
-            if (friend == null) {
-                logger.error("user returned is null");
-                continue;
-            }
 
             Set<UserData> set = Sets.newHashSet(relationshipsApi.getFollows(friend.id, access_token));
             // excluding any connections outside of the group

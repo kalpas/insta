@@ -36,16 +36,17 @@ public class ApiBase {
     private ObjectMapper        mapper;
 
     public <T extends ApiResponse> T executeRequest(String requestString, Class<T> cls) throws APINotAllowedError {
-        String jsonResponse = executeHttpRequest(requestString);
         T apiResponse = null;
-
-        if (jsonResponse == null) {
-            return apiResponse;
-        }
-
         try {
+            String jsonResponse = executeHttpRequest(requestString);
+
+            if (jsonResponse == null) {
+                return apiResponse;
+            }
+
             apiResponse = parseJson(jsonResponse, cls);
         } catch (OAuthRateLimitException e) {
+            logger.info("OAuthRateLimitException", e);
             try {
                 logger.info("sleeping for 60 min");
                 TimeUnit.MINUTES.sleep(60);
@@ -73,39 +74,31 @@ public class ApiBase {
         return apiResponse;
     }
 
-    private String executeHttpRequest(String requestString) {
+    private String executeHttpRequest(String requestString) throws OAuthRateLimitException {
         return executeHttpRequest(requestString, MAX_RETRIES);
     }
 
     // FIXME rewrite using response handler (ResponseHandler)
-    private String executeHttpRequest(String requestString, int retries) {
+    // FIXME hell with different statuses both on http and API level
+    private String executeHttpRequest(String requestString, int retries) throws OAuthRateLimitException {
         logger.debug(requestString);
         HttpGet request = new HttpGet(requestString);
         String entityString = null;
         CloseableHttpResponse response = null;
+
         try {
             response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpStatus.SC_OK == statusCode) {
+            if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
                 entityString = IOUtils.toString(response.getEntity().getContent());
                 logger.debug(entityString);
-            } else if (HttpStatus.SC_SERVICE_UNAVAILABLE == statusCode) {
-                // retry after 3s
-                logger.info(String.format("service unavailable, waiting for 3s untill next retry (%d retries left)",
-                        retries));
-                TimeUnit.SECONDS.sleep(3);
-
-                if (retries != 0) {
-                    // making retries in recursion
-                    return executeHttpRequest(requestString, retries - 1);
-                }
+            } else if (API.HTTP_SC_TOO_MANY_REQUESTS.equals(statusCode)) {
+                throw new OAuthRateLimitException("HTTP status is 429");
             } else {
                 logger.error(String.format("status code is not OK: %s", statusCode));
             }
         } catch (IllegalStateException | IOException e1) {
             logger.error(e1);
-        } catch (InterruptedException e) {
-            logger.error("sleep interrupted");
         } finally {
             if (response != null) {
                 try {

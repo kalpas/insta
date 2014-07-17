@@ -36,7 +36,7 @@ public class GraphBuilderController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String build(@RequestParam(value = "access_token", required = true) String access_token,
-            @RequestParam(value = "id", required = true) String id,
+            @RequestParam(value = "id", required = true) Long id,
             @RequestParam(value = "level", required = false) Integer level, ModelMap model) {
 
         String fileName = AppConsts.ROOT_PATH + "graph" + new Date().getTime();
