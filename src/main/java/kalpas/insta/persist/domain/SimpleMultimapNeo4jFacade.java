@@ -130,13 +130,13 @@ public class SimpleMultimapNeo4jFacade implements Multimap<UserData, UserData> {
 
         userNode.setProperty("username", user.username);
 
-        userNode.setProperty("first_name", user.first_name);
-        userNode.setProperty("full_name", user.full_name);
-        userNode.setProperty("profile_picture", user.profile_picture);
-        userNode.setProperty("id", user.id);
-        userNode.setProperty("last_name", user.last_name);
-        userNode.setProperty("bio", user.bio);
-        userNode.setProperty("website", user.website);
+        userNode.setProperty("first_name", user.first_name == null ? "null" : user.first_name);
+        userNode.setProperty("full_name", user.full_name == null ? "null" : user.full_name);
+        userNode.setProperty("profile_picture", user.profile_picture == null ? "null" : user.profile_picture);
+        userNode.setProperty("id", user.id == null ? "null" : user.id);
+        userNode.setProperty("last_name", user.last_name == null ? "null" : user.last_name);
+        userNode.setProperty("bio", user.bio == null ? "null" : user.bio);
+        userNode.setProperty("website", user.website == null ? "null" : user.website);
 
         return userNode;
     }

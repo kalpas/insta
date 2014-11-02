@@ -5,5 +5,6 @@
 </head>
 <body>
 <h2>Error: ${error}</h2>
+<a href="/insta">relogin</a>
 </body>
 </html>

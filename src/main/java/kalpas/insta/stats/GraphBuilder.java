@@ -7,6 +7,7 @@ import java.util.Set;
 import kalpas.insta.api.RelationshipsApi;
 import kalpas.insta.api.UsersApi;
 import kalpas.insta.api.domain.UserData;
+import kalpas.insta.persist.domain.SimpleMultimapNeo4jFacade;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +36,7 @@ public class GraphBuilder {
     public Multimap<UserData, UserData> buildGraph(UserData center, String access_token) {
 
         // TODO change it to HashMultimap when things will be all right
-        Multimap<UserData, UserData> graph = ArrayListMultimap.create();
+        Multimap<UserData, UserData> graph = new SimpleMultimapNeo4jFacade(dbService);
 
         Set<UserData> group = wireFirstLayer(access_token, center, graph);
 

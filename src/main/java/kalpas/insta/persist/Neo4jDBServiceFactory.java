@@ -18,7 +18,10 @@ public class Neo4jDBServiceFactory {
         IndexDefinition indexDefinition;
         try (Transaction tx = graphDb.beginTx()) {
             Schema schema = graphDb.schema();
-            indexDefinition = schema.indexFor(DynamicLabel.label("User")).on("username").create();
+            Iterable<IndexDefinition> indexes = schema.getIndexes(DynamicLabel.label("User"));
+            if (!indexes.iterator().hasNext()) {
+                indexDefinition = schema.indexFor(DynamicLabel.label("User")).on("username").create();
+            }
             tx.success();
         }
 

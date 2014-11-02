@@ -2,8 +2,11 @@ package kalpas.insta.api;
 
 import java.net.URISyntaxException;
 
+import kalpas.insta.api.domain.GetMediaResponse;
+import kalpas.insta.api.domain.Media;
 import kalpas.insta.api.domain.UserData;
 import kalpas.insta.api.domain.UsersResponse;
+import kalpas.insta.api.domain.UsersSearchResponse;
 import kalpas.insta.api.domain.base.InstagramApiException;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -92,6 +95,35 @@ public class UsersApi {
         return userData;
     }
 
+    public UserData[] search(String userName, int count, String access_token) {
+        UserData[] result = null;
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("https").setHost(API.HOST).setPath("/" + API.VERSION + PATH + "/search")
+                .addParameter("q", userName).addParameter("count", String.valueOf(count))
+                .addParameter("access_token", access_token);
+        String requestUri = null;
+        try {
+            requestUri = builder.build().toString();
+        } catch (URISyntaxException e) {
+            logger.error(e);
+        }
+
+        try {
+            UsersSearchResponse apiResponse = api.executeRequest(requestUri, UsersSearchResponse.class);
+            if (apiResponse != null) {
+                result = apiResponse.data;
+            } else {
+                logger.error("null api response, check request above");
+            }
+        } catch (InstagramApiException e) {
+            // FIXME some code here to handle APINotAllowedError
+        }
+
+        return result;
+
+    }
+
     private String buildRequestString(String id, String access_token) {
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(API.HOST).setPath("/" + API.VERSION + PATH + "/" + id + "/")
@@ -103,5 +135,32 @@ public class UsersApi {
             logger.error(e);
         }
         return requestUri;
+    }
+
+    public Media[] getMedia(String id, String access_token) {
+        Media[] result = null;
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("https").setHost(API.HOST).setPath("/" + API.VERSION + PATH + "/" + id + "/media/recent")
+                .addParameter("access_token", access_token);
+        String requestUri = null;
+        try {
+            requestUri = builder.build().toString();
+        } catch (URISyntaxException e) {
+            logger.error(e);
+        }
+
+        try {
+            GetMediaResponse apiResponse = api.executeRequest(requestUri, GetMediaResponse.class);
+            if (apiResponse != null) {
+                result = apiResponse.data;
+            } else {
+                logger.error("null api response, check request above");
+            }
+        } catch (InstagramApiException e) {
+            // FIXME some code here to handle APINotAllowedError
+        }
+
+        return result;
     }
 }

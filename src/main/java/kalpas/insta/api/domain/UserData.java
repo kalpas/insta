@@ -10,6 +10,7 @@ public class UserData {
     public String last_name;
     public String bio;
     public String website;
+    public String type;            // "user",
 
     public Counts counts;
 

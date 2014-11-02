@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import kalpas.insta.api.API;
 import kalpas.insta.api.domain.base.AuthResponse;
 import kalpas.insta.api.domain.base.Meta;
@@ -35,12 +37,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
-    protected final Log         logger        = LogFactory.getLog(getClass());
+
+    protected final Log logger = LogFactory.getLog(getClass());
 
     @RequestMapping(method = RequestMethod.GET)
-    public String getCode(@RequestParam(value = "code", required = false) String code, ModelMap model)
-            throws URISyntaxException, ClientProtocolException, IOException {
+    public String getCode(@RequestParam(value = "code", required = false) String code, ModelMap model,
+            HttpSession session) throws URISyntaxException, ClientProtocolException, IOException {
         // model.addAttribute("code", code);
+
+
+        boolean autorised = session.getAttribute(AppConsts.SESSION_AUTH_STATE) != null;
+        if (autorised) {
+            String image = (String) session.getAttribute(AppConsts.IMAGE_ATTRIBUTE);
+            String name = (String) session.getAttribute(AppConsts.NAME_ATTRIBUTE);
+            String access_token = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);
+            String id = (String) session.getAttribute(AppConsts.ID_ATTRIBUTE);
+
+            populateModel(model, image, name, access_token, id);
+            return "home";
+        }
 
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(API.HOST).setPath(API.AUTH_PATH);
@@ -72,10 +87,15 @@ public class AuthController {
         Meta error = null;
         try {
             authResponse = mapper.readValue(entityString, AuthResponse.class);
-            model.addAttribute("image", authResponse.user.profile_picture);
-            model.addAttribute("name", authResponse.user.username);
-            model.addAttribute("access_token", authResponse.access_token);
-            model.addAttribute("id", authResponse.user.id);
+            String profile_picture = authResponse.user.profile_picture;
+            String username = authResponse.user.username;
+            String access_token = authResponse.access_token;
+            Long id = authResponse.user.id;
+
+            populateModel(model, profile_picture, username, access_token, id.toString());
+
+            populateSession(session, profile_picture, username, access_token, id.toString());
+
             return "home";
         } catch (JsonParseException | JsonMappingException e) {
             error = mapper.readValue(entityString, Meta.class);
@@ -92,5 +112,21 @@ public class AuthController {
         // authResponse.access_token);
         // }
 
+    }
+
+    private void populateSession(HttpSession session, String profile_picture, String username, String access_token,
+            String id) {
+        session.setAttribute(AppConsts.SESSION_AUTH_STATE, "success");
+        session.setAttribute(AppConsts.IMAGE_ATTRIBUTE, profile_picture);
+        session.setAttribute(AppConsts.NAME_ATTRIBUTE, username);
+        session.setAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE, access_token);
+        session.setAttribute(AppConsts.ID_ATTRIBUTE, id);
+    }
+
+    private void populateModel(ModelMap model, String image, String name, String access_token, String id) {
+        model.addAttribute(AppConsts.IMAGE_ATTRIBUTE, image);
+        model.addAttribute(AppConsts.NAME_ATTRIBUTE, name);
+        model.addAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE, access_token);
+        model.addAttribute(AppConsts.ID_ATTRIBUTE, id);
     }
 }
