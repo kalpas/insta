@@ -137,7 +137,7 @@ public class UsersApi {
         return requestUri;
     }
 
-    public Media[] getMedia(String id, String access_token) {
+    public Media[] getMedia(Long id, String access_token) {
         Media[] result = null;
 
         URIBuilder builder = new URIBuilder();

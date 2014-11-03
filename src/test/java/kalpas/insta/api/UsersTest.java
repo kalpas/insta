@@ -25,7 +25,7 @@ public class UsersTest {
 
     @Test
     public void test2() {
-        Media[] data = api.getMedia(String.valueOf(3), "307563973.cdcfc3e.877e29e67e784f2b99c4dc599da51d7d");
+        Media[] data = api.getMedia(3l, "307563973.cdcfc3e.877e29e67e784f2b99c4dc599da51d7d");
         System.out.println(data);
 
     }
