@@ -16,9 +16,12 @@
 
     <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper"></bean>
 
-    <bean id="neo4jDBService" class="kalpas.insta.persist.Neo4jDBServiceFactory"
+    <!-- <bean id="neo4jDBService" class="kalpas.insta.persist.Neo4jDBServiceFactory"
         factory-method="getNeo4jService">
         <constructor-arg value="insta.db"></constructor-arg>
+    </bean> -->
+    
+    <bean id="neo4jDBService" class="kalpas.insta.persist.Neo4jDBServiceFactory"
+        factory-method="getMockNeo4jService">
     </bean>
-
 </beans>
