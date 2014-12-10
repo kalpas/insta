@@ -40,7 +40,19 @@ public class AuthController {
 
     protected final Log logger = LogFactory.getLog(getClass());
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, value = "/login")
+    public String login(ModelMap model, HttpSession session)
+            throws URISyntaxException, ClientProtocolException, IOException {
+
+        model.addAttribute("insta_client_id", API.CLIENT_ID);
+        model.addAttribute("insta_redirect_uri", API.REDIRECT_URI);
+        model.addAttribute("insta_response_type", API.AUTH_RESPONSE_TYPE);
+
+        return "login";
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/code")
     public String getCode(@RequestParam(value = "code", required = false) String code, ModelMap model,
             HttpSession session) throws URISyntaxException, ClientProtocolException, IOException {
         // model.addAttribute("code", code);
