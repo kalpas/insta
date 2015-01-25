@@ -4,6 +4,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import kalpas.insta.api.domain.RelationshipsResponse;
 import kalpas.insta.api.domain.UserData;
@@ -15,6 +17,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.Joiner;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 @Component
 public class RelationshipsApi {
@@ -28,6 +34,8 @@ public class RelationshipsApi {
 	private ApiBase             api;
 
 	private static final String PATH   = "/users";
+
+	private Cache<String, List<UserData>> cache  = CacheBuilder.newBuilder().build();
 
 	public List<UserData> getFollows(Long userId, String accessToken) {
 		String METHOD = "follows";
@@ -44,9 +52,23 @@ public class RelationshipsApi {
 		return getUsers(userId, accessToken, METHOD);
 	}
 
-	private List<UserData> getUsers(Long userId, String access_token, String METHOD) {
-		long elapsed = System.nanoTime();
+	private List<UserData> getUsers(final Long userId, final String access_token, final String METHOD) {
+		try {
+			return cache.get(getCacheKey(userId.toString(), access_token, METHOD), new Callable<List<UserData>>() {
 
+				@Override
+				public List<UserData> call() throws Exception {
+					return getUsersNotCached(userId, access_token, METHOD);
+				}
+			});
+		} catch (ExecutionException e) {
+			logger.error(e);
+			return null;
+		}
+	}
+
+	private List<UserData> getUsersNotCached(Long userId, String access_token, String METHOD) {
+		long elapsed = System.nanoTime();
 		List<UserData> list = new ArrayList<>();
 		try {
 			RelationshipsResponse apiResponse = api.executeRequest(buildRequestString(userId, access_token, METHOD),
@@ -87,6 +109,10 @@ public class RelationshipsApi {
 			logger.error(e);
 		}
 		return string;
+	}
+
+	private String getCacheKey(String... strings) {
+		return Joiner.on("").join(strings);
 	}
 
 }
