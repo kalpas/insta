@@ -24,6 +24,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,107 +39,93 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/auth")
 public class AuthController {
 
-    protected final Log logger = LogFactory.getLog(getClass());
+	@Autowired
+	private API         API;
 
-    @RequestMapping(method = RequestMethod.GET, value = "/login")
-    public String login(ModelMap model, HttpSession session)
-            throws URISyntaxException, ClientProtocolException, IOException {
+	protected final Log logger = LogFactory.getLog(getClass());
 
-        model.addAttribute("insta_client_id", API.CLIENT_ID);
-        model.addAttribute("insta_redirect_uri", API.REDIRECT_URI);
-        model.addAttribute("insta_response_type", API.AUTH_RESPONSE_TYPE);
+	@RequestMapping(method = RequestMethod.GET, value = "/login")
+	public String login(ModelMap model, HttpSession session) throws URISyntaxException, ClientProtocolException,
+	        IOException {
 
-        return "login";
+		model.addAttribute("insta_client_id", API.clientId);
+		model.addAttribute("insta_redirect_uri", API.redirectUri);
+		model.addAttribute("insta_response_type", API.authResponseType);
 
-    }
+		return "login";
 
-    @RequestMapping(method = RequestMethod.GET, value = "/code")
-    public String getCode(@RequestParam(value = "code", required = false) String code, ModelMap model,
-            HttpSession session) throws URISyntaxException, ClientProtocolException, IOException {
-        // model.addAttribute("code", code);
+	}
 
+	@RequestMapping(method = RequestMethod.GET, value = "/code")
+	public String getCode(@RequestParam(value = "code", required = false) String code, ModelMap model,
+	        HttpSession session) throws URISyntaxException, ClientProtocolException, IOException {
 
-        boolean autorised = session.getAttribute(AppConsts.SESSION_AUTH_STATE) != null;
-        if (autorised) {
-            String image = (String) session.getAttribute(AppConsts.IMAGE_ATTRIBUTE);
-            String name = (String) session.getAttribute(AppConsts.NAME_ATTRIBUTE);
-            String access_token = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);
-            String id = (String) session.getAttribute(AppConsts.ID_ATTRIBUTE);
+		boolean autorised = session.getAttribute(AppConsts.SESSION_AUTH_STATE) != null;
+		if (autorised) {
+			return "redirect:/home";
+		}
 
-            populateModel(model, image, name, access_token, id);
-            return "home";
-        }
+		URIBuilder builder = new URIBuilder();
+		builder.setScheme("https").setHost(API.HOST).setPath(API.AUTH_PATH);
 
-        URIBuilder builder = new URIBuilder();
-        builder.setScheme("https").setHost(API.HOST).setPath(API.AUTH_PATH);
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		String URI = builder.build().toString();
+		logger.debug(URI);
+		HttpPost post = new HttpPost(URI);
 
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        String URI = builder.build().toString();
-        logger.debug(URI);
-        HttpPost post = new HttpPost(URI);
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("client_id", API.clientId));
+		params.add(new BasicNameValuePair("client_secret", API.clientSecret));
+		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
+		params.add(new BasicNameValuePair("redirect_uri", API.redirectUri));
+		params.add(new BasicNameValuePair("code", code));
+		post.setEntity(new UrlEncodedFormEntity(params, Consts.UTF_8));
+		post.addHeader("Content-Type", "application/x-www-form-urlencoded");
+		CloseableHttpResponse response = httpclient.execute(post);
 
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("client_id", API.CLIENT_ID));
-        params.add(new BasicNameValuePair("client_secret", API.CLIENT_SECRET));
-        params.add(new BasicNameValuePair("grant_type", "authorization_code"));
-        params.add(new BasicNameValuePair("redirect_uri", API.REDIRECT_URI));
-        params.add(new BasicNameValuePair("code", code));
-        post.setEntity(new UrlEncodedFormEntity(params, Consts.UTF_8));
-        post.addHeader("Content-Type", "application/x-www-form-urlencoded");
-        CloseableHttpResponse response = httpclient.execute(post);
+		String entityString;
+		try {
+			entityString = IOUtils.toString(response.getEntity().getContent());
+			logger.debug(entityString);
+		} finally {
+			response.close();
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		AuthResponse authResponse = null;
+		Meta error = null;
+		try {
+			authResponse = mapper.readValue(entityString, AuthResponse.class);
+			String profile_picture = authResponse.user.profile_picture;
+			String username = authResponse.user.username;
+			String access_token = authResponse.access_token;
+			Long id = authResponse.user.id;
 
-        String entityString;
-        try {
-            entityString = IOUtils.toString(response.getEntity().getContent());
-            logger.debug(entityString);
-        } finally {
-            response.close();
-        }
-        ObjectMapper mapper = new ObjectMapper();
-        AuthResponse authResponse = null;
-        Meta error = null;
-        try {
-            authResponse = mapper.readValue(entityString, AuthResponse.class);
-            String profile_picture = authResponse.user.profile_picture;
-            String username = authResponse.user.username;
-            String access_token = authResponse.access_token;
-            Long id = authResponse.user.id;
+			populateSession(session, profile_picture, username, access_token, id.toString());
 
-            populateModel(model, profile_picture, username, access_token, id.toString());
+			return "redirect:/home";
+		} catch (JsonParseException | JsonMappingException e) {
+			error = mapper.readValue(entityString, Meta.class);
+			logger.error(error);
+			model.addAttribute("error", error.toString());
+			return "error";
+		}
 
-            populateSession(session, profile_picture, username, access_token, id.toString());
+		// if (authResponse != null) {
+		// RelationshipsApi relationships = new RelationshipsApi();
+		// relationships.getFollows(authResponse.user.id,
+		// authResponse.access_token);
+		// relationships.getFollowedBy(authResponse.user.id,
+		// authResponse.access_token);
+		// }
 
-            return "home";
-        } catch (JsonParseException | JsonMappingException e) {
-            error = mapper.readValue(entityString, Meta.class);
-            logger.error(error);
-            model.addAttribute("error", error.toString());
-            return "error";
-        }
+	}
 
-        // if (authResponse != null) {
-        // RelationshipsApi relationships = new RelationshipsApi();
-        // relationships.getFollows(authResponse.user.id,
-        // authResponse.access_token);
-        // relationships.getFollowedBy(authResponse.user.id,
-        // authResponse.access_token);
-        // }
-
-    }
-
-    private void populateSession(HttpSession session, String profile_picture, String username, String access_token,
-            String id) {
-        session.setAttribute(AppConsts.SESSION_AUTH_STATE, "success");
-        session.setAttribute(AppConsts.IMAGE_ATTRIBUTE, profile_picture);
-        session.setAttribute(AppConsts.NAME_ATTRIBUTE, username);
-        session.setAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE, access_token);
-        session.setAttribute(AppConsts.ID_ATTRIBUTE, id);
-    }
-
-    private void populateModel(ModelMap model, String image, String name, String access_token, String id) {
-        model.addAttribute(AppConsts.IMAGE_ATTRIBUTE, image);
-        model.addAttribute(AppConsts.NAME_ATTRIBUTE, name);
-        model.addAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE, access_token);
-        model.addAttribute(AppConsts.ID_ATTRIBUTE, id);
-    }
+	private void populateSession(HttpSession session, String profile_picture, String username, String access_token,
+	        String id) {
+		session.setAttribute(AppConsts.SESSION_AUTH_STATE, "success");
+		session.setAttribute(AppConsts.IMAGE_ATTRIBUTE, profile_picture);
+		session.setAttribute(AppConsts.NAME_ATTRIBUTE, username);
+		session.setAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE, access_token);
+		session.setAttribute(AppConsts.ID_ATTRIBUTE, id);
+	}
 }

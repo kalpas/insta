@@ -9,9 +9,6 @@
     <!-- the application context definition for the springapp DispatcherServlet -->
     <context:component-scan base-package="kalpas.insta" />
 
-    <!-- <bean name="/auth" class="kalpas.insta.AuthController" />
-    <bean name="/graph" class="kalpas.insta.stats.GraphBuilderController" /> -->
-
     <bean id="viewResolver"
         class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="viewClass"
@@ -19,5 +16,5 @@
         <property name="prefix" value="/WEB-INF/jsp/"></property>
         <property name="suffix" value=".jsp"></property>
     </bean>
-
+    
 </beans>

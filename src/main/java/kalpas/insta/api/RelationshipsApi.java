@@ -22,23 +22,26 @@ public class RelationshipsApi {
     protected final Log         logger = LogFactory.getLog(getClass());
 
     @Autowired
+	private API                 API;
+
+	@Autowired
     private ApiBase             api;
 
     private static final String PATH   = "/users";
 
-    public List<UserData> getFollows(Long userId, String access_token) {
+    public List<UserData> getFollows(Long userId, String accessToken) {
         String METHOD = "follows";
-        return getUsers(userId, access_token, METHOD);
+        return getUsers(userId, accessToken, METHOD);
     }
 
-    public List<UserData> getFollowedBy(Long userId, String access_token) {
+    public List<UserData> getFollowedBy(Long userId, String accessToken) {
         String METHOD = "followed-by";
-        return getUsers(userId, access_token, METHOD);
+        return getUsers(userId, accessToken, METHOD);
     }
 
-    public List<UserData> getRequestedBy(Long userId, String access_token) {
+    public List<UserData> getRequestedBy(Long userId, String accessToken) {
         String METHOD = "requested-by";
-        return getUsers(userId, access_token, METHOD);
+        return getUsers(userId, accessToken, METHOD);
     }
 
     private List<UserData> getUsers(Long userId, String access_token, String METHOD) {

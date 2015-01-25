@@ -22,6 +22,9 @@ public class UsersApi {
     protected final Log         logger = LogFactory.getLog(getClass());
 
     @Autowired
+	private API                 API;
+
+	@Autowired
     private ApiBase             api;
 
     private static final String PATH   = "/users";
@@ -95,13 +98,13 @@ public class UsersApi {
         return userData;
     }
 
-    public UserData[] search(String userName, int count, String access_token) {
+    public UserData[] search(String userName, int count, String accessToken) {
         UserData[] result = null;
 
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(API.HOST).setPath("/" + API.VERSION + PATH + "/search")
                 .addParameter("q", userName).addParameter("count", String.valueOf(count))
-                .addParameter("access_token", access_token);
+                .addParameter("access_token", accessToken);
         String requestUri = null;
         try {
             requestUri = builder.build().toString();
