@@ -3,6 +3,7 @@ package kalpas.insta.api;
 import java.net.URISyntaxException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import kalpas.insta.api.domain.GetMediaResponse;
 import kalpas.insta.api.domain.Media;
@@ -35,8 +36,10 @@ public class UsersApi {
 
 	private static final String       PATH        = "/users";
 
-	private Cache<String, UserData>   userCache   = CacheBuilder.newBuilder().build();
-	private Cache<String, UserData[]> searchCache = CacheBuilder.newBuilder().build();
+	private Cache<String, UserData>   userCache   = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS)
+	                                                      .build();
+	private Cache<String, UserData[]> searchCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS)
+	                                                      .build();
 
 	/**
 	 * populates give user object with data

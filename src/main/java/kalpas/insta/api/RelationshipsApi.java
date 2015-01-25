@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import kalpas.insta.api.domain.RelationshipsResponse;
 import kalpas.insta.api.domain.UserData;
@@ -35,7 +36,8 @@ public class RelationshipsApi {
 
 	private static final String PATH   = "/users";
 
-	private Cache<String, List<UserData>> cache  = CacheBuilder.newBuilder().build();
+	private Cache<String, List<UserData>> cache  = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS)
+	                                                     .build();
 
 	public List<UserData> getFollows(Long userId, String accessToken) {
 		String METHOD = "follows";

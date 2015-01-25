@@ -58,7 +58,7 @@
 				</form>				
 			</div>
 			<div class="row">
-				<div class="col-xs-12 mutual-result list-group">
+				<div class="col-xs-12 mutual-result">
 					
 				</div>
 					
@@ -73,16 +73,23 @@
 					  data: $("#mutual").serialize(),
 					  success:  function(data){
 						console.log(data);
-						$.each(data,function(index,value){
-							$('.mutual-result').append(
-								"<div class='list-group-item'>"+
-									"<p>"+
-										value.username +
-									"</p>"+
-									"<img src='"+ value.profile_picture +"' />"+
-								"</div>"
-								);
-						});
+						
+							$.each(data,function(index,value){
+								$('.mutual-result').append(
+									"<div class='col-xs-3'>"+	
+										"<span class='glyphicon glyphicon-chevron-left'></span>"+
+										"<span class='glyphicon glyphicon-chevron-right'></span>"+
+										"<img class='img-thumbnail' src='"+ value.user.profile_picture +"' />"+
+										"<span class='glyphicon glyphicon-chevron-left'></span>"+
+										"<span class='glyphicon glyphicon-chevron-right'></span>"+
+										"<p>"+
+											"<a href='http://instagram.com/"+ value.user.username + "/'>"+
+											value.user.username +
+											"</a>"+
+										"</p>"+
+									"</div>"
+									);
+							});
 						},
 						error: function( jqXHR ,  textStatus,  errorThrown ){
 						console.log(textStatus);
