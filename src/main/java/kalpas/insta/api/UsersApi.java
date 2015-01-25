@@ -1,6 +1,8 @@
 package kalpas.insta.api;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import kalpas.insta.api.domain.GetMediaResponse;
 import kalpas.insta.api.domain.Media;
@@ -16,18 +18,25 @@ import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Joiner;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 @Component
 public class UsersApi {
 
-	protected final Log         logger = LogFactory.getLog(getClass());
+	protected final Log               logger      = LogFactory.getLog(getClass());
 
 	@Autowired
-	private API                 API;
+	private API                       API;
 
 	@Autowired
-	private ApiBase             api;
+	private ApiBase                   api;
 
-	private static final String PATH   = "/users";
+	private static final String       PATH        = "/users";
+
+	private Cache<String, UserData>   userCache   = CacheBuilder.newBuilder().build();
+	private Cache<String, UserData[]> searchCache = CacheBuilder.newBuilder().build();
 
 	/**
 	 * populates give user object with data
@@ -75,13 +84,28 @@ public class UsersApi {
 		return user;
 	}
 
-	public UserData get(Long id, String access_token) {
+	public UserData get(final Long id, final String accessToken) {
+		try {
+			return userCache.get(getCacheKey(id.toString(), accessToken), new Callable<UserData>() {
+
+				@Override
+				public UserData call() throws Exception {
+					return getNotCached(id, accessToken);
+				}
+			});
+		} catch (ExecutionException e) {
+			logger.error(e);
+			return null;
+		}
+	}
+
+	public UserData getNotCached(Long id, String accessToken) {
 		logger.debug(String.format("getting info for id %s", id));
 
 		long elapsed = System.nanoTime();
 		UserData userData = null;
 		try {
-			UsersResponse apiResponse = api.executeRequest(buildRequestString(id.toString(), access_token),
+			UsersResponse apiResponse = api.executeRequest(buildRequestString(id.toString(), accessToken),
 			        UsersResponse.class);
 			if (apiResponse != null) {
 				userData = apiResponse.data;
@@ -98,7 +122,24 @@ public class UsersApi {
 		return userData;
 	}
 
-	public UserData[] search(String userName, int count, String accessToken) {
+	public UserData[] search(final String userName, final int count, final String accessToken) {
+		try {
+			return searchCache.get(getCacheKey(userName, String.valueOf(count), accessToken),
+			        new Callable<UserData[]>() {
+
+				        @Override
+				        public UserData[] call() throws Exception {
+					        return searchNotCached(userName, count, accessToken);
+				        }
+			        });
+		} catch (ExecutionException e) {
+			logger.error(e);
+			return null;
+		}
+
+	}
+
+	public UserData[] searchNotCached(String userName, int count, String accessToken) {
 		UserData[] result = null;
 
 		URIBuilder builder = new URIBuilder();
@@ -165,5 +206,9 @@ public class UsersApi {
 		}
 
 		return result;
+	}
+
+	private String getCacheKey(String... strings) {
+		return Joiner.on("").join(strings);
 	}
 }
