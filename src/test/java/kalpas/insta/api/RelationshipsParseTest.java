@@ -15,13 +15,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RelationshipsParseTest {
 
-    @Test
-    public void test() throws JsonParseException, JsonMappingException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        File file = new File("src\\test\\resources\\kalpas\\insta\\api\\followers.json");
-        FileInputStream fileInputStream = new FileInputStream(file);
-        RelationshipsResponse apiResponse = mapper.readValue(new InputStreamReader(fileInputStream, "UTF-8"),
-                RelationshipsResponse.class);
-    }
+	@Test
+	public void test() throws JsonParseException, JsonMappingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		File file = new File("src\\test\\resources\\kalpas\\insta\\api\\followers.json");
+		FileInputStream fileInputStream = new FileInputStream(file);
+		RelationshipsResponse apiResponse = mapper.readValue(new InputStreamReader(fileInputStream, "UTF-8"),
+		        RelationshipsResponse.class);
+	}
 
 }

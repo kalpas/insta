@@ -26,7 +26,7 @@ import com.google.common.collect.Sets;
 public class FriendsController {
 
 	@Autowired
-	private UsersApi userApi;
+	private UsersApi         userApi;
 
 	@Autowired
 	private RelationshipsApi relationshipsApi;
@@ -36,9 +36,9 @@ public class FriendsController {
 		String accessToken = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);
 		String user1name = params.get("firstUser");
 		String user2name = params.get("secondUser");
-		
-		UserData user1,user2=null;
-		
+
+		UserData user1, user2 = null;
+
 		UserData[] found = userApi.search(user1name, 1, accessToken);
 		user1 = found.length > 0 ? found[0] : null;
 		found = userApi.search(user2name, 1, accessToken);
@@ -58,9 +58,7 @@ public class FriendsController {
 
 		Set<UserData> intersection = Sets.intersection(user1Connections, user2connections);
 
-
 		return intersection;
 	}
-
 
 }

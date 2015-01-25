@@ -4,6 +4,6 @@ import org.neo4j.graphdb.RelationshipType;
 
 public enum RelationshipsType implements RelationshipType {
 
-    FOLLOWS;
+	FOLLOWS;
 
 }

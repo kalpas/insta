@@ -23,43 +23,43 @@ import com.google.common.collect.Sets;
 @RequestMapping("/graph")
 public class GraphBuilderController {
 
-    private final Log    logger = LogFactory.getLog(getClass());
+	private final Log    logger = LogFactory.getLog(getClass());
 
-    @Autowired
-    private GraphBuilder graphBuilder;
+	@Autowired
+	private GraphBuilder graphBuilder;
 
-    @Autowired
-    private GmlWriter    writer;
+	@Autowired
+	private GmlWriter    writer;
 
-    @Autowired
-    private UsersApi     usersApi;
+	@Autowired
+	private UsersApi     usersApi;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String build(@RequestParam(value = "access_token", required = true) String access_token,
-            @RequestParam(value = "id", required = true) Long id,
-            @RequestParam(value = "level", required = false) Integer level, ModelMap model) {
+	@RequestMapping(method = RequestMethod.GET)
+	public String build(@RequestParam(value = "access_token", required = true) String access_token,
+	        @RequestParam(value = "id", required = true) Long id,
+	        @RequestParam(value = "level", required = false) Integer level, ModelMap model) {
 
-        String fileName = AppConsts.ROOT_PATH + "graph" + new Date().getTime();
+		String fileName = AppConsts.ROOT_PATH + "graph" + new Date().getTime();
 
-        UserData user = usersApi.get(id, access_token);
-        if (user != null) {
-            if (level == null || level == 1) {
-                // TODO testing 2nd version of getGraph
-                GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(user, access_token));
-                writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
-            } else if (level == 2) {
-                GmlGraph graph = GmlGraph.build(graphBuilder.buildGraphLevel2(user, access_token));
-                writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
-            }
+		UserData user = usersApi.get(id, access_token);
+		if (user != null) {
+			if (level == null || level == 1) {
+				// TODO testing 2nd version of getGraph
+				GmlGraph graph = GmlGraph.build(graphBuilder.buildGraph(user, access_token));
+				writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
+			} else if (level == 2) {
+				GmlGraph graph = GmlGraph.build(graphBuilder.buildGraphLevel2(user, access_token));
+				writer.saveGraphToFile(fileName, graph, Sets.newHashSet("id", "username"));
+			}
 
-            model.addAttribute("file", fileName);
-            return "graph";
-        } else {
-            String errorMessage = String.format("User ID \"%s\" is not valid. check for error above", id);
-            logger.error(errorMessage);
-            model.addAttribute("error", errorMessage);
-            return "error";
-        }
-    }
+			model.addAttribute("file", fileName);
+			return "graph";
+		} else {
+			String errorMessage = String.format("User ID \"%s\" is not valid. check for error above", id);
+			logger.error(errorMessage);
+			model.addAttribute("error", errorMessage);
+			return "error";
+		}
+	}
 
 }

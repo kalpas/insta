@@ -1,6 +1,5 @@
 package kalpas.insta.persist;
 
-
 import kalpas.insta.persist.domain.RelationshipsType;
 
 import org.junit.Test;
@@ -17,31 +16,30 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = { "testAppContext.xml" })
 public class Neo4JTest {
 
-    @Autowired
-    private GraphDatabaseService graphDb;
+	@Autowired
+	private GraphDatabaseService graphDb;
 
-    @Test
-    public void testNeo4j() {
-        Node firstNode;
-        Node seconNode;
+	@Test
+	public void testNeo4j() {
+		Node firstNode;
+		Node seconNode;
 
-        Relationship relationship;
+		Relationship relationship;
 
-        try (Transaction tx = graphDb.beginTx()) {
+		try (Transaction tx = graphDb.beginTx()) {
 
-            firstNode = graphDb.createNode();
-            firstNode.setProperty("message", "Hello, ");
+			firstNode = graphDb.createNode();
+			firstNode.setProperty("message", "Hello, ");
 
-            seconNode = graphDb.createNode();
-            seconNode.setProperty("message", "World!");
+			seconNode = graphDb.createNode();
+			seconNode.setProperty("message", "World!");
 
-            relationship = firstNode.createRelationshipTo(seconNode, RelationshipsType.FOLLOWS);
-            relationship.setProperty("message", "brave Neo4j ");
+			relationship = firstNode.createRelationshipTo(seconNode, RelationshipsType.FOLLOWS);
+			relationship.setProperty("message", "brave Neo4j ");
 
-            tx.success();
-        }
+			tx.success();
+		}
 
-
-    }
+	}
 
 }

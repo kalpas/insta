@@ -13,7 +13,7 @@ public class BaseController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String defaut(ModelMap model, HttpSession session) {
-		
+
 		String image = (String) session.getAttribute(AppConsts.IMAGE_ATTRIBUTE);
 		String name = (String) session.getAttribute(AppConsts.NAME_ATTRIBUTE);
 		String access_token = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);

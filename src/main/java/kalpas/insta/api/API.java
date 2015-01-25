@@ -1,6 +1,5 @@
 package kalpas.insta.api;
 
-
 public class API {
 
 	public final String  AUTH_PATH                 = "/oauth/access_token/";
