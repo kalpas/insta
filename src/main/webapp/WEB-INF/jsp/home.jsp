@@ -37,6 +37,11 @@
 		</div>
 		<div class="row mutual-result-container">				
 		</div>
+		<p>
+		<hr>
+		<div class="alert alert-danger" role="alert">
+        <strong>Danger!</strong>Features below are not working. Please stay away
+      	</div>
 
 		<div class="page-header">
 			<h1>Build graps</h1>
@@ -65,6 +70,11 @@
 					</form>
 				</div>
 			</div>
+
+			<hr>
+			<footer>
+       			<p>&copy; kalpas 2015</p>
+      		</footer>
 
 
 			<div class='col-xs-3' id="mutual-template">	
