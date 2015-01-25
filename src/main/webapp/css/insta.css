@@ -3,10 +3,40 @@ body{
 }
 
 .container {
-max-width: 730px;
+	max-width: 730px;
 }
 
 .jumbotron {
-  text-align: center;
-  border-bottom: 1px solid #e5e5e5;
+	text-align: center;
+	border-bottom: 1px solid #e5e5e5;
 }
+
+.jumbotron img{
+	border-radius:100%;
+}
+
+#mutual-template{
+	display:none;
+}
+
+.mutual-result-container tr{
+	text-align:center;
+}
+
+.mutual-result-container div{
+		text-align:center;
+}
+
+.glyphicon.glyphicon-chevron-left, .glyphicon.glyphicon-chevron-right{
+	color:red;
+}
+
+.mutual-picture{	
+	width:200px;
+	border-radius:100%;
+}
+
+.progress{
+	display:none;
+}
+

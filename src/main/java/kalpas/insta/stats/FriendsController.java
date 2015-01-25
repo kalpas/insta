@@ -67,6 +67,7 @@ public class FriendsController {
 		Set<UserData> intersection = Sets.intersection(user1Connections, user2connections);
 
 		ArrayList<UserDataWrapper> result = new ArrayList<>();
+
 		for (UserData entry : intersection) {
 
 			Boolean[] flags = new Boolean[4];

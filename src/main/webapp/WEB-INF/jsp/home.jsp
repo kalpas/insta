@@ -14,6 +14,31 @@
 			<img src="${image}" alt="some_text">
 		</div>
 		<div class="page-header">
+			<h1>Mutual Friends</h1>
+		</div>	
+		<div class="row">
+			<form id="mutual">
+				<div class="form-group col-sm-6">
+					<input class="form-control" type="text" name="firstUser" id="firstUser">
+				</div>
+				<div class="form-group col-sm-6">
+					<input class="form-control" type="text" name="secondUser" id="secondUser">
+				</div>
+				<div class="form-group col-sm-12">
+					<button type="button" class="btn btn-success" id="submitMutual" >Get mutual</button>
+					<button type="button" class="btn btn-info" id="clearMutual" >Clear</button>
+				</div>
+			</form>				
+		</div>
+		<div class="progress">
+			<div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+				<span class="sr-only">Please wait</span>
+			</div>
+		</div>
+		<div class="row mutual-result-container">				
+		</div>
+
+		<div class="page-header">
 			<h1>Build graps</h1>
 		</div>
 		<div class="row">
@@ -40,71 +65,69 @@
 					</form>
 				</div>
 			</div>
-			<div class="page-header">
-				<h1>Mutual Friends</h1>
-			</div>	
-			<div class="row">
-				<form id="mutual">
-					<div class="form-group col-sm-6">
-						<input class="form-control" type="text" name="firstUser" id="firstUser">
-					</div>
-					<div class="form-group col-sm-6">
-						<input class="form-control" type="text" name="secondUser" id="secondUser">
-					</div>
-					<div class="form-group col-sm-12">
-							<button type="button" class="btn btn-success" id="submitMutual" >Get mutual</button>
-							<button type="button" class="btn btn-info" id="clearMutual" >Clear</button>
-					</div>
-				</form>				
+
+
+			<div class='col-xs-3' id="mutual-template">	
+				<table>
+					<tr>
+						<td >
+							<span id="left-left" class='glyphicon glyphicon-chevron-left' ></span>
+							<span id="left-right" class='glyphicon glyphicon-chevron-right'></span>
+						</td>
+						<td >
+							<img class='img-thumbnail mutual-picture' />						
+						</td>
+						<td >
+							<span id="right-left" class='glyphicon glyphicon-chevron-left'></span>
+							<span id="right-right" class='glyphicon glyphicon-chevron-right'></span>
+						</td>
+					</tr>					
+				</table>
+				<p><a></a></p>
 			</div>
-			<div class="row">
-				<div class="col-xs-12 mutual-result">
-					
-				</div>
-					
-			</div>
+
 			<script type="text/javascript">
-			$(function(){
-				$('#submitMutual').click(function(){
-					$('.mutual-result').empty();
-					$.ajax({
-					  type: "POST",
-					  url: "${pageContext.request.contextPath}/friends",
-					  data: $("#mutual").serialize(),
-					  success:  function(data){
-						console.log(data);
-						
-							$.each(data,function(index,value){
-								$('.mutual-result').append(
-									"<div class='col-xs-3'>"+	
-										"<span class='glyphicon glyphicon-chevron-left'></span>"+
-										"<span class='glyphicon glyphicon-chevron-right'></span>"+
-										"<img class='img-thumbnail' src='"+ value.user.profile_picture +"' />"+
-										"<span class='glyphicon glyphicon-chevron-left'></span>"+
-										"<span class='glyphicon glyphicon-chevron-right'></span>"+
-										"<p>"+
-											"<a href='http://instagram.com/"+ value.user.username + "/'>"+
-											value.user.username +
-											"</a>"+
-										"</p>"+
-									"</div>"
-									);
-							});
-						},
-						error: function( jqXHR ,  textStatus,  errorThrown ){
-						console.log(textStatus);
-						}
-					});
+				$(function(){
+					$('#submitMutual').click(function(){
+						$('.mutual-result-container').empty();
+						$('.progress').show().addClass('active');
+						$.ajax({
+							type: "POST",
+							url: "${pageContext.request.contextPath}/friends",
+							data: $("#mutual").serialize(),
+							success:  function(data){
+								console.log(data);
+
+								$.each(data,function(index,value){
+									var elem = $('#mutual-template').clone().removeAttr('id').appendTo($('.mutual-result-container'));
+									$(elem).find('img').attr('src',value.user.profile_picture);
+									$(elem).find('a').attr('href','http://instagram.com/'+ value.user.username + '/').text(value.user.username);	
+									if(value.flags[0]){
+										$(elem).find('#left-left').css('color','green');
+									}
+									if(value.flags[1]){
+										$(elem).find('#left-right').css('color','green');	
+									}							
+									if(value.flags[2]){
+										$(elem).find('#right-right').css('color','green');
+									}							
+									if(value.flags[3]){
+										$(elem).find('#right-left').css('color','green');
+									}														
+								});
+								$('.progress').hide().removeClass('active');
+							},
+							error: function( jqXHR ,  textStatus,  errorThrown ){
+								console.log(textStatus);
+								$('.progress').hide().removeClass('active');
+							}
+						});
 				});
 				$('#clearMutual').click(function(){
-					$('.mutual-result').empty();
+					$('.mutual-result-container').empty();
 				});
-				
-			});
 
-			
+				});
 			</script>
-			
-
-		</body>
-		</html>
+</body>
+</html>
