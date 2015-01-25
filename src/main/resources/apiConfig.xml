@@ -11,18 +11,18 @@
         
         
 	<!-- DEV INSTA CONFIG -->
-	<bean id="API" class="kalpas.insta.api.API">
+	<!-- <bean id="API" class="kalpas.insta.api.API">
 		<property name="clientId" value="798fa31c52e8486db7cbb56efaf4d6f0" />
 		<property name="clientSecret" value="59bb738b95ca4f978a560b8580275fca" />
 		<property name="authResponseType" value="code" />
 		<property name="redirectUri" value="http://localhost:8080/auth/code" />
-	</bean>
+	</bean> -->
 
 	<!-- PRODUCTION INSTA CONFIG -->
-	<!-- <bean id="API" class="kalpas.insta.api.API">
+	<bean id="API" class="kalpas.insta.api.API">
 		<property name="clientId" value="cdcfc3e943a74d9e84291b97d62d5c02" />
 		<property name="clientSecret" value="970b5b5dd5e14b2bb75b5873ae9868a3" />
 		<property name="authResponseType" value="code" />
 		<property name="redirectUri" value="http://insta.kalpas.net/auth/code" />
-	</bean> -->
+	</bean>
 </beans>
