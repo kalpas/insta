@@ -37,46 +37,10 @@
 		</div>
 		<div class="row mutual-result-container">				
 		</div>
-		<p>
 		<hr>
-		<div class="alert alert-danger" role="alert">
-        <strong>Danger!</strong>Features below are not working. Please stay away
-      	</div>
-
-		<div class="page-header">
-			<h1>Build graps</h1>
-		</div>
-		<div class="row">
-
-			<div class="col-sm-12">
-				<a class="btn btn-lg btn-info" href="${pageContext.request.contextPath}/graph?access_token=${access_token}&id=${id}">build simple
-					graph</a>
-				</div>
-
-			</div>
-
-			<div class="page-header">
-				<h1>Build flashmob three</h1>
-			</div>	
-			<div class="row">
-				<div class="col-sm-12">
-					<form action="${pageContext.request.contextPath}/mob">
-						<div class="form-group">
-							<input class="form-control" type="text" name="target_id" value="" />
-						</div>
-						<div class="form-group">
-							<input class="btn btn-success" type="submit" />
-						</div>
-					</form>
-				</div>
-			</div>
-
-			<hr>
-			<footer>
-       			<p>&copy; kalpas 2015</p>
-      		</footer>
-
-
+		<footer>
+			<p>&copy; kalpas 2015</p>
+     		</footer>
 			<div class='col-xs-3' id="mutual-template">	
 				<table>
 					<tr>
@@ -94,6 +58,7 @@
 					</tr>					
 				</table>
 				<p><a></a></p>
+			</div>
 			</div>
 
 			<script type="text/javascript">
@@ -138,6 +103,18 @@
 				});
 
 				});
+			</script>
+
+			<!-- Analytics -->
+			<script>
+			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+			  ga('create', 'UA-58948245-1', 'auto');
+			  ga('send', 'pageview');
+
 			</script>
 </body>
 </html>

@@ -23,6 +23,18 @@ public class BaseController {
 		return "home";
 	}
 
+	@RequestMapping(value = "/experiments", method = RequestMethod.GET)
+	public String experiments(ModelMap model, HttpSession session) {
+
+		String image = (String) session.getAttribute(AppConsts.IMAGE_ATTRIBUTE);
+		String name = (String) session.getAttribute(AppConsts.NAME_ATTRIBUTE);
+		String access_token = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);
+		String id = (String) session.getAttribute(AppConsts.ID_ATTRIBUTE);
+
+		populateModel(model, image, name, access_token, id);
+		return "experiments";
+	}
+
 	private void populateModel(ModelMap model, String image, String name, String access_token, String id) {
 		model.addAttribute(AppConsts.IMAGE_ATTRIBUTE, image);
 		model.addAttribute(AppConsts.NAME_ATTRIBUTE, name);
