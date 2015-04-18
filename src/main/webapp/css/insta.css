@@ -34,6 +34,7 @@ body{
 
 .glyphicon.glyphicon-chevron-left, .glyphicon.glyphicon-chevron-right{
 	color:red;
+	visibility:hidden;
 }
 
 .mutual-picture{	
@@ -53,6 +54,10 @@ body{
 
 .friends a{
 	font-size: 10pt;
+}
+
+.friends div{
+	text-align: center;
 }
 
 .friend-picture{

@@ -79,9 +79,7 @@ function getMutual() {
 function createFriendElement(index, value, parent) {
 	var elem = $('#friend-template').clone().removeAttr('id').appendTo(
 		parent);
-	$(elem).find('img').attr('src', value.user.profile_picture).on('dragstart',function(event){
-		ondrag(event,value.user.username);
-	});
+	createUserImgElement(elem,value);
 	$(elem).find('a').attr('href',
 		'http://instagram.com/' + value.user.username + '/').text(
 		value.user.username);
@@ -94,13 +92,20 @@ function createFriendElement(index, value, parent) {
 	}
 
 	
+	function createUserImgElement(elem,value){
+		$(elem).find('img').attr('src', value.user.profile_picture).hover(function(){
+			elem.find('span').css('visibility','visible');
+		},function(){
+			elem.find('span').css('visibility','hidden');
+		}).on('dragstart',function(event){
+			ondrag(event,value.user.username);
+		});
+	}
 
 	function createMutualElement(index, value) {
 		var elem = $('#mutual-template').clone().removeAttr('id').appendTo(
 			$('.mutual-result-container'));
-		$(elem).find('img').attr('src', value.user.profile_picture).on('dragstart',function(event){
-			ondrag(event,value.user.username);
-		});
+		createUserImgElement(elem,value);
 		$(elem).find('a').attr('href',
 			'http://instagram.com/' + value.user.username + '/').text(
 			value.user.username);

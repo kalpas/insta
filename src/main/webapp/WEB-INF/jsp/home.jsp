@@ -88,7 +88,7 @@
 	</footer>
 
 	<!-- Templates-->
-	<div class='col-xs-3' id="mutual-template">
+	<div class='col-xs-4' id="mutual-template">
 		<table>
 			<tr>
 				<td><span id="left-left"
