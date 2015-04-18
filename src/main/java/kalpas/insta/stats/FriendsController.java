@@ -33,7 +33,37 @@ public class FriendsController {
 	@Autowired
 	private RelationshipsApi relationshipsApi;
 
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.POST, value = "/user")
+	public Collection<UserDataWrapper> getConnections(HttpSession session, @RequestParam("name") String name)
+	        throws Exception {
+		String accessToken = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);
+		if (accessToken == null) {
+			return null;
+		}
+
+		Set<UserDataWrapper> result = new HashSet<>();
+
+		UserData[] searchResult = userApi.search(name, 1, accessToken);
+		if (searchResult.length == 1) {
+			UserData user = searchResult[0];
+			List<UserData> followedBy = relationshipsApi.getFollowedBy(user.id, accessToken);
+			List<UserData> follows = relationshipsApi.getFollows(user.id, accessToken);
+
+			Set<UserData> connections = new HashSet<>(followedBy);
+			connections.addAll(follows);
+
+			for (UserData connection : connections) {
+				result.add(new UserDataWrapper(connection, new Boolean[] { follows.contains(connection),
+				        followedBy.contains(connection) }));
+			}
+
+		}
+
+		return result;
+
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/mutual")
 	public Collection<UserDataWrapper> getMutual(HttpSession session, ModelMap map,
 	        @RequestParam Map<String, String> params) throws Exception {
 		String accessToken = (String) session.getAttribute(AppConsts.ACCESS_TOKEN_ATTRIBUTE);
@@ -41,7 +71,16 @@ public class FriendsController {
 			return null;
 		}
 		String user1name = params.get("firstUser");
+		if (user1name.contains("http")) {
+			String[] parts = user1name.split("/");
+			user1name = parts[parts.length - 1];
+		}
+
 		String user2name = params.get("secondUser");
+		if (user2name.contains("http")) {
+			String[] parts = user2name.split("/");
+			user2name = parts[parts.length - 1];
+		}
 
 		UserData user1, user2 = null;
 
@@ -55,8 +94,6 @@ public class FriendsController {
 
 		List<UserData> user2followedBy = relationshipsApi.getFollowedBy(user2.id, accessToken);
 		List<UserData> user2follows = relationshipsApi.getFollows(user2.id, accessToken);
-
-
 
 		Set<UserData> user1Connections = new HashSet<>(user1followedBy);
 		user1Connections.addAll(user1follows);
@@ -82,24 +119,20 @@ public class FriendsController {
 			result.add(wrapper);
 		}
 
-		// Map<String, Collection<UserData>> result = new HashMap<>();
-		// result.put("bothFollow", Sets.intersection(new
-		// HashSet<>(user1follows), new HashSet<>(user2follows)));
-		// result.put("bothFollowedBy", Sets.intersection(new
-		// HashSet<>(user1followedBy), new HashSet<>(user2followedBy)));
-		// result.put("1followsXfollows2", Sets.intersection(new
-		// HashSet<>(user1follows), new HashSet<>(user2followedBy)));
-		// result.put("2followsXfollows1", Sets.intersection(new
-		// HashSet<>(user2follows), new HashSet<>(user1followedBy)));
-
-
-
 		return result;
 	}
 
 	public class UserDataWrapper {
 		public UserData  user;
 		public Boolean[] flags;
+
+		public UserDataWrapper(UserData user, Boolean[] flags) {
+			this.user = user;
+			this.flags = flags;
+		}
+
+		public UserDataWrapper() {
+		}
 	}
 
 }
