@@ -107,7 +107,7 @@
 		</div>
 
 
-		<div class='col-sm-4' id="friend-template">
+		<div class='col-sm-6' id="friend-template">
 			<table>
 				<tr>
 					<td><span id="left-left"
