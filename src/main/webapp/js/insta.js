@@ -26,6 +26,7 @@ function ondrop(event){
 function loadFriends(user) {
 	loadConnections(user,function(data){
 		var parent = $('#friends-container');
+		parent.empty();
 		$.each(data, function(index,value){
 			createFriendElement(index,value,parent);
 		});
