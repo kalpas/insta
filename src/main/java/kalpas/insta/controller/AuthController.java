@@ -1,4 +1,4 @@
-package kalpas.insta;
+package kalpas.insta.controller;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import kalpas.insta.AppConsts;
 import kalpas.insta.api.API;
 import kalpas.insta.api.domain.base.AuthResponse;
 import kalpas.insta.api.domain.base.Meta;
@@ -25,6 +26,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Controller
 @RequestMapping("/auth")

@@ -1,11 +1,14 @@
-package kalpas.insta;
+package kalpas.insta.controller;
 
 import javax.servlet.http.HttpSession;
 
+import kalpas.insta.AppConsts;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Controller
 @RequestMapping("/home")

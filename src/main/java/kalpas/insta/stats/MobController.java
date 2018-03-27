@@ -71,13 +71,13 @@ public class MobController {
 
 		for (Media post : media) {
 			String captionText = post.caption.text;
-			if (!Strings.isNullOrEmpty(captionText) && captionText.contains("5") && captionText.contains("лет")) {
+			if (!Strings.isNullOrEmpty(captionText) && captionText.contains("5") && captionText.contains("TODO")) {
 				startingPost = post;
 				break;
 			} else {
 				for (Comment comment : post.comments.data) {
 					String commentText = comment.text;
-					if (!Strings.isNullOrEmpty(commentText) && commentText.contains("5") && commentText.contains("лет")) {
+					if (!Strings.isNullOrEmpty(commentText) && commentText.contains("5") && commentText.contains("TODO")) {
 						startingPost = post;
 						break;
 					}
@@ -89,7 +89,7 @@ public class MobController {
 		}
 
 		if (startingPost == null) {
-			model.addAttribute("error", "no post with 5 лет found");
+			model.addAttribute("error", "no post with 5 пїЅпїЅпїЅ found");
 			return "error";
 		}
 

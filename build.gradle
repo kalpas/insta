@@ -1,5 +1,20 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.0.0.RELEASE"
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 
 group = 'kalpas'
 version = '0.0.1-SNAPSHOT'
@@ -9,20 +24,24 @@ description = """insta Maven Webapp"""
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-
+bootJar {
+    baseName = 'gs-spring-boot'
+    version =  '0.1.0'
+}
 
 repositories {
-        
-     maven { url "http://repo.maven.apache.org/maven2" }
+    mavenCentral()
 }
 dependencies {
-    compile group: 'org.springframework', name: 'spring-core', version:'4.0.5.RELEASE'
-    compile group: 'org.springframework', name: 'spring-web', version:'4.0.5.RELEASE'
-    compile group: 'org.springframework', name: 'spring-webmvc', version:'4.0.5.RELEASE'
-    compile group: 'org.springframework', name: 'spring-test', version:'4.0.5.RELEASE'
+    compile("org.springframework.boot:spring-boot-starter-web:2.0.0.RELEASE")
+//    compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '2.0.0.RELEASE'
+    compile 'org.springframework:spring-context:5.0.4.RELEASE'
+    compile group: 'org.springframework', name: 'spring-web', version:'5.0.4.RELEASE'
+    compile group: 'org.springframework', name: 'spring-webmvc', version:'5.0.4.RELEASE'
+    compile group: 'org.springframework', name: 'spring-test', version:'5.0.4.RELEASE'
     compile group: 'javax.servlet', name: 'jstl', version:'1.2'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.3.4'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.4.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.4'
     compile group: 'commons-io', name: 'commons-io', version:'2.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.1'
     compile group: 'com.google.guava', name: 'guava', version:'14.0.1'

@@ -1,5 +1,8 @@
 package kalpas.insta.api;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class API {
 
 	public final String  AUTH_PATH                 = "/oauth/access_token/";
